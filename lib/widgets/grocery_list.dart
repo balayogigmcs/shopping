@@ -37,6 +37,13 @@ class _GroceryListState extends State<GroceryList> {
       });
     }
 
+    if (response.body == 'null'){
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
     final Map<String, dynamic> listData = json.decode(response.body);
     final List<GroceryItem> loadedItems = [];
     for (final item in listData.entries) {
@@ -75,7 +82,7 @@ class _GroceryListState extends State<GroceryList> {
       _groceryItems.remove(item);
     });
 
-    final url = Uri.https('hoppinglist-97d6b-default-rtdb.firebaseio.com',
+    final url = Uri.https('shoppinglist-97d6b-default-rtdb.firebaseio.com',
         'shopping_list/${item.id}.json');
 
     final response = await http.delete(url);
