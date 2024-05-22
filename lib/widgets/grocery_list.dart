@@ -1,9 +1,10 @@
-//import 'dart:convert';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shopping/models/grocery_item.dart';
 import 'package:shopping/widgets/newitem.dart';
+import 'package:shopping/data/categories.dart';
 
 class GroceryList extends StatefulWidget {
   const GroceryList({super.key});
@@ -13,7 +14,7 @@ class GroceryList extends StatefulWidget {
 }
 
 class _GroceryListState extends State<GroceryList> {
-  final List<GroceryItem> _groceryItems = [];
+   List<GroceryItem> _groceryItems = [];
 
   @override // here we used initState() because it initialization helps the server to load data, after stateobject is created
   void initState() {
@@ -26,7 +27,20 @@ class _GroceryListState extends State<GroceryList> {
         'shoppinglist-97d6b-default-rtdb.firebaseio.com', 'shopping_list.json');
 
     final response = await http.get(url);
-    print(response.body);
+    final Map<String, dynamic> listData =
+        json.decode(response.body);
+    final List<GroceryItem> _loadedItems = [];
+    for (final item in listData.entries) {
+      final category  = categories.entries.firstWhere((catitem) => catitem.value.name == item.value['category']).value;
+      _loadedItems.add(GroceryItem(
+          id: item.key,
+          name: item.value['name'],
+          quantity: item.value['quantity'],
+          category: category ));
+    }
+    setState(() {
+      _groceryItems = _loadedItems;
+    });
   }
 
   void _addItem() async {
