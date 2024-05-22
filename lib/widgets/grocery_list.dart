@@ -17,6 +17,7 @@ class _GroceryListState extends State<GroceryList> {
   List<GroceryItem> _groceryItems = [];
 
   var _isLoading = true;
+  String? _error;
 
   @override // here we used initState() because it initialization helps the server to load data, after stateobject is created
   void initState() {
@@ -26,9 +27,16 @@ class _GroceryListState extends State<GroceryList> {
 
   void _loadItems() async {
     final url = Uri.https(
-        'shoppinglist-97d6b-default-rtdb.firebaseio.com', 'shopping_list.json');
+        'hoppinglist-97d6b-default-rtdb.firebaseio.com', 'shopping_list.json');
 
     final response = await http.get(url);
+
+    if (response.statusCode >= 400) {
+      setState(() {
+        _error = 'Failed to Fetch data, Please try again later';
+      });
+    }
+
     final Map<String, dynamic> listData = json.decode(response.body);
     final List<GroceryItem> loadedItems = [];
     for (final item in listData.entries) {
@@ -52,7 +60,7 @@ class _GroceryListState extends State<GroceryList> {
     // remember as here statefulwidget , noneed of adding context in _addItem()
     // if it statelessWidget as doesnot know about context so instead we write here _addItem()
 
-    if(newItem == null){
+    if (newItem == null) {
       return;
     }
     setState(() {
@@ -69,11 +77,10 @@ class _GroceryListState extends State<GroceryList> {
 
   @override
   Widget build(BuildContext context) {
-
     Widget content = const Center(child: Text('No Items added yet!'));
 
-    if(_isLoading){
-     content = const Center(child: CircularProgressIndicator());
+    if (_isLoading) {
+      content = const Center(child: CircularProgressIndicator());
     }
 
     if (_groceryItems.isNotEmpty) {
@@ -94,6 +101,10 @@ class _GroceryListState extends State<GroceryList> {
                   trailing: Text(_groceryItems[index].quantity.toString()),
                 ),
               ));
+    }
+
+    if (_error != null) {
+      content = Center(child: Text(_error!));
     }
 
     return Scaffold(
