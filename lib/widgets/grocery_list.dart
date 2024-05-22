@@ -1,4 +1,7 @@
+//import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shopping/models/grocery_item.dart';
 import 'package:shopping/widgets/newitem.dart';
 
@@ -12,18 +15,27 @@ class GroceryList extends StatefulWidget {
 class _GroceryListState extends State<GroceryList> {
   final List<GroceryItem> _groceryItems = [];
 
+  @override // here we used initState() because it initialization helps the server to load data, after stateobject is created
+  void initState() {
+    super.initState();
+    _loadItems();
+  }
+
+  void _loadItems() async {
+    final url = Uri.https(
+        'shoppinglist-97d6b-default-rtdb.firebaseio.com', 'shopping_list.json');
+
+    final response = await http.get(url);
+    print(response.body);
+  }
+
   void _addItem() async {
-    final newItem = await Navigator.of(context).push<GroceryItem>(
+    await Navigator.of(context).push<GroceryItem>(
         MaterialPageRoute(builder: (ctx) => const NewItem()));
     // remember as here statefulwidget , noneed of adding context in _addItem()
     // if it statelessWidget as doesnot know about context so instead we write here _addItem()
 
-    if (newItem == null) {
-      return;
-    }
-    setState(() {
-      _groceryItems.add(newItem);
-    });
+    _loadItems();
   }
 
   void _removeItem(GroceryItem item) {
